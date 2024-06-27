@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Firebase Chat</title>
+    <style>
+        #messages { height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; }
+        #message-form { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div id="messages"></div>
+    <form id="message-form">
+        <input type="text" id="message-input" placeholder="Enter your message">
+        <button type="submit">Send</button>
+    </form>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {apiKey: "AIzaSyAILMGQirmdhrlynJjpXc-d1FCiPEuqheE",
+    authDomain: "chat-8141d.firebaseapp.com",
+    projectId: "chat-8141d",
+    storageBucket: "chat-8141d.appspot.com",
+    messagingSenderId: "190441000128",
+    appId: "1:190441000128:web:ee28a3b8297a96737ef125",
+    measurementId: "G-E0W9CJ4ZSX"
+            // Your Firebase config object goes here
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        const messagesRef = ref(database, 'messages');
+
+        document.getElementById('message-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            if (message) {
+                push(messagesRef, { text: message });
+                input.value = '';
+            }
+        });
+
+        onChildAdded(messagesRef, (snapshot) => {
+            const message = snapshot.val();
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message.text;
+            document.getElementById('messages').appendChild(messageElement);
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+        });
+    </script>
+</body>
+</html>
