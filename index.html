@@ -94,22 +94,8 @@
             background-color: #2980b9;
         }
         #scroll-bottom {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 20px;
-            cursor: pointer;
-            display: none;
-            z-index: 1000;
-        }
-        #scroll-bottom:hover {
-            background-color: #2980b9;
+            padding: 10px;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -129,8 +115,8 @@
             <form id="message-form">
                 <input type="text" id="message-input" placeholder="Enter your message" required>
                 <button type="submit">Send</button>
+                <button type="button" id="scroll-bottom">↓</button>
             </form>
-            <button id="scroll-bottom">↓</button>
         </div>
     </div>
 
@@ -205,19 +191,10 @@
         const scrollBottomBtn = document.getElementById('scroll-bottom');
         const messagesContainer = document.getElementById('messages');
 
-        function toggleScrollButton() {
-            if (messagesContainer.scrollTop + messagesContainer.clientHeight < messagesContainer.scrollHeight - 20) {
-                scrollBottomBtn.style.display = 'block';
-            } else {
-                scrollBottomBtn.style.display = 'none';
-            }
-        }
-
         function scrollToBottom() {
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        messagesContainer.addEventListener('scroll', toggleScrollButton);
         scrollBottomBtn.addEventListener('click', scrollToBottom);
 
         onChildAdded(messagesRef, (snapshot) => {
@@ -247,7 +224,6 @@
             `;
             document.getElementById('messages').appendChild(messageElement);
             scrollToBottom();
-            toggleScrollButton();
         });
     </script>
 </body>
