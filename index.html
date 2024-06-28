@@ -3,18 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Firebase Chat</title>
+    <title>Password Protected Firebase Chat</title>
     <style>
-        #messages { height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; }
-        #message-form { margin-top: 10px; }
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        #chat-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        #messages {
+            height: 400px;
+            overflow-y: scroll;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+        .message {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        .nickname {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        #password-form, #nickname-form, #message-form {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        input[type="text"], input[type="password"] {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
     </style>
 </head>
 <body>
-    <div id="messages"></div>
-    <form id="message-form">
-        <input type="text" id="message-input" placeholder="Enter your message">
-        <button type="submit">Send</button>
-    </form>
+    <div id="chat-container">
+        <h1>Password Protected Firebase Chat</h1>
+        <div id="password-container">
+            <form id="password-form">
+                <input type="password" id="password-input" placeholder="Enter chat password" required>
+                <button type="submit">Enter Chat</button>
+            </form>
+        </div>
+        <div id="nickname-container" style="display:none;">
+            <form id="nickname-form">
+                <input type="text" id="nickname-input" placeholder="Enter your nickname" required>
+                <button type="submit">Set Nickname</button>
+            </form>
+        </div>
+        <div id="chat-area" style="display:none;">
+            <div id="messages"></div>
+            <form id="message-form">
+                <input type="text" id="message-input" placeholder="Enter your message" required>
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
 
     <script type="module">
         // Import the functions you need from the SDKs you need
@@ -23,12 +89,12 @@
 
         // Your web app's Firebase configuration
         const firebaseConfig = {apiKey: "AIzaSyAILMGQirmdhrlynJjpXc-d1FCiPEuqheE",
-    authDomain: "chat-8141d.firebaseapp.com",
-    projectId: "chat-8141d",
-    storageBucket: "chat-8141d.appspot.com",
-    messagingSenderId: "190441000128",
-    appId: "1:190441000128:web:ee28a3b8297a96737ef125",
-    measurementId: "G-E0W9CJ4ZSX"
+                                authDomain: "chat-8141d.firebaseapp.com",
+                                projectId: "chat-8141d",
+                                storageBucket: "chat-8141d.appspot.com",
+                                messagingSenderId: "190441000128",
+                                appId: "1:190441000128:web:ee28a3b8297a96737ef125",
+                                measurementId: "G-E0W9CJ4ZSX"
             // Your Firebase config object goes here
         };
 
@@ -37,13 +103,37 @@
         const database = getDatabase(app);
 
         const messagesRef = ref(database, 'messages');
+        let nickname = '';
+
+        // Chat password (in a real app, this should be securely stored on the server)
+        const CHAT_PASSWORD = "1005";
+
+        document.getElementById('password-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password-input').value;
+            if (password === CHAT_PASSWORD) {
+                document.getElementById('password-container').style.display = 'none';
+                document.getElementById('nickname-container').style.display = 'block';
+            } else {
+                alert('Incorrect password. Please try again.');
+            }
+        });
+
+        document.getElementById('nickname-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            nickname = document.getElementById('nickname-input').value.trim();
+            if (nickname) {
+                document.getElementById('nickname-container').style.display = 'none';
+                document.getElementById('chat-area').style.display = 'block';
+            }
+        });
 
         document.getElementById('message-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const input = document.getElementById('message-input');
             const message = input.value.trim();
             if (message) {
-                push(messagesRef, { text: message });
+                push(messagesRef, { nickname: nickname, text: message });
                 input.value = '';
             }
         });
@@ -51,7 +141,8 @@
         onChildAdded(messagesRef, (snapshot) => {
             const message = snapshot.val();
             const messageElement = document.createElement('div');
-            messageElement.textContent = message.text;
+            messageElement.className = 'message';
+            messageElement.innerHTML = `<span class="nickname">${message.nickname}:</span> ${message.text}`;
             document.getElementById('messages').appendChild(messageElement);
             document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
         });
