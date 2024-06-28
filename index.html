@@ -5,22 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OKC09</title>
     <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
-<link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
-<link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
-<link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
-<link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
-<link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
-<link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
-<link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
-<link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="manifest" href="/manifest.json">
-<meta name="msapplication-TileColor" content="#ffffff">
-<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
-<meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -93,6 +93,24 @@
         button:hover {
             background-color: #2980b9;
         }
+        #scroll-bottom {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            display: none;
+            z-index: 1000;
+        }
+        #scroll-bottom:hover {
+            background-color: #2980b9;
+        }
     </style>
 </head>
 <body>
@@ -112,6 +130,7 @@
                 <input type="text" id="message-input" placeholder="Enter your message" required>
                 <button type="submit">Send</button>
             </form>
+            <button id="scroll-bottom">↓</button>
         </div>
     </div>
 
@@ -121,14 +140,14 @@
         import { getDatabase, ref, push, onChildAdded, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
         // Your web app's Firebase configuration
-        const firebaseConfig = {apiKey: "AIzaSyAILMGQirmdhrlynJjpXc-d1FCiPEuqheE",
-    authDomain: "chat-8141d.firebaseapp.com",
-    projectId: "chat-8141d",
-    storageBucket: "chat-8141d.appspot.com",
-    messagingSenderId: "190441000128",
-    appId: "1:190441000128:web:ee28a3b8297a96737ef125",
-    measurementId: "G-E0W9CJ4ZSX"
-            // Your Firebase config object goes here
+        const firebaseConfig = {
+            apiKey: "AIzaSyAILMGQirmdhrlynJjpXc-d1FCiPEuqheE",
+            authDomain: "chat-8141d.firebaseapp.com",
+            projectId: "chat-8141d",
+            storageBucket: "chat-8141d.appspot.com",
+            messagingSenderId: "190441000128",
+            appId: "1:190441000128:web:ee28a3b8297a96737ef125",
+            measurementId: "G-E0W9CJ4ZSX"
         };
 
         // Initialize Firebase
@@ -183,6 +202,24 @@
             }
         });
 
+        const scrollBottomBtn = document.getElementById('scroll-bottom');
+        const messagesContainer = document.getElementById('messages');
+
+        function toggleScrollButton() {
+            if (messagesContainer.scrollTop + messagesContainer.clientHeight < messagesContainer.scrollHeight - 20) {
+                scrollBottomBtn.style.display = 'block';
+            } else {
+                scrollBottomBtn.style.display = 'none';
+            }
+        }
+
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        messagesContainer.addEventListener('scroll', toggleScrollButton);
+        scrollBottomBtn.addEventListener('click', scrollToBottom);
+
         onChildAdded(messagesRef, (snapshot) => {
             const message = snapshot.val();
             const messageElement = document.createElement('div');
@@ -209,7 +246,8 @@
                 </div>
             `;
             document.getElementById('messages').appendChild(messageElement);
-            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+            scrollToBottom();
+            toggleScrollButton();
         });
     </script>
 </body>
