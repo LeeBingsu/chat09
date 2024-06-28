@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chat for 09</title>
+    <title>OKC09</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,16 +29,32 @@
         .message {
             margin-bottom: 10px;
             line-height: 1.5;
+            display: flex;
+            align-items: start;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .message-content {
+            flex-grow: 1;
         }
         .nickname {
             font-weight: bold;
             color: #2c3e50;
         }
-        #password-form, #nickname-form, #message-form {
+        .timestamp {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            margin-left: 10px;
+        }
+        #nickname-form, #message-form {
             display: flex;
             margin-bottom: 10px;
         }
-        input[type="text"], input[type="password"] {
+        input[type="text"] {
             flex-grow: 1;
             padding: 10px;
             border: 1px solid #ddd;
@@ -60,15 +76,8 @@
 </head>
 <body>
     <div id="chat-container">
-        <h1>Open Chat for Everyone</h1>
-        <h2>password : 1005</h2>
-        <div id="password-container">
-            <form id="password-form">
-                <input type="password" id="password-input" placeholder="Enter chat password" required>
-                <button type="submit">Enter Chat</button>
-            </form>
-        </div>
-        <div id="nickname-container" style="display:none;">
+        <h1>Online Korea Chat for 09</h1>
+        <div id="nickname-container">
             <form id="nickname-form">
                 <input type="text" id="nickname-input" placeholder="Enter your nickname" required>
                 <button type="submit">Set Nickname</button>
@@ -86,16 +95,16 @@
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {apiKey: "AIzaSyAILMGQirmdhrlynJjpXc-d1FCiPEuqheE",
-                                authDomain: "chat-8141d.firebaseapp.com",
-                                projectId: "chat-8141d",
-                                storageBucket: "chat-8141d.appspot.com",
-                                messagingSenderId: "190441000128",
-                                appId: "1:190441000128:web:ee28a3b8297a96737ef125",
-                                measurementId: "G-E0W9CJ4ZSX"
+    authDomain: "chat-8141d.firebaseapp.com",
+    projectId: "chat-8141d",
+    storageBucket: "chat-8141d.appspot.com",
+    messagingSenderId: "190441000128",
+    appId: "1:190441000128:web:ee28a3b8297a96737ef125",
+    measurementId: "G-E0W9CJ4ZSX"
             // Your Firebase config object goes here
         };
 
@@ -105,25 +114,22 @@
 
         const messagesRef = ref(database, 'messages');
         let nickname = '';
+        let avatarUrl = '';
 
-        // Chat password (in a real app, this should be securely stored on the server)
-        const CHAT_PASSWORD = "1005";
-
-        document.getElementById('password-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const password = document.getElementById('password-input').value;
-            if (password === CHAT_PASSWORD) {
-                document.getElementById('password-container').style.display = 'none';
-                document.getElementById('nickname-container').style.display = 'block';
-            } else {
-                alert('Incorrect password. Please try again.');
-            }
-        });
+        // Array of avatar URLs
+        const avatars = [
+            'https://api.dicebear.com/6.x/adventurer/svg?seed=Felix',
+            'https://api.dicebear.com/6.x/adventurer/svg?seed=Aneka',
+            'https://api.dicebear.com/6.x/adventurer/svg?seed=Alex',
+            'https://api.dicebear.com/6.x/adventurer/svg?seed=Liz',
+            'https://api.dicebear.com/6.x/adventurer/svg?seed=Max'
+        ];
 
         document.getElementById('nickname-form').addEventListener('submit', (e) => {
             e.preventDefault();
             nickname = document.getElementById('nickname-input').value.trim();
             if (nickname) {
+                avatarUrl = avatars[Math.floor(Math.random() * avatars.length)];
                 document.getElementById('nickname-container').style.display = 'none';
                 document.getElementById('chat-area').style.display = 'block';
             }
@@ -134,7 +140,12 @@
             const input = document.getElementById('message-input');
             const message = input.value.trim();
             if (message) {
-                push(messagesRef, { nickname: nickname, text: message });
+                push(messagesRef, { 
+                    nickname: nickname, 
+                    text: message,
+                    timestamp: serverTimestamp(),
+                    avatar: avatarUrl
+                });
                 input.value = '';
             }
         });
@@ -143,7 +154,25 @@
             const message = snapshot.val();
             const messageElement = document.createElement('div');
             messageElement.className = 'message';
-            messageElement.innerHTML = `<span class="nickname">${message.nickname}:</span> ${message.text}`;
+            
+            // Convert the timestamp to GMT+9
+            let timestamp = message.timestamp ? new Date(message.timestamp) : new Date();
+            timestamp.setHours(timestamp.getHours() + 9);
+            let formattedTime = timestamp.toLocaleString('en-US', { 
+                timeZone: 'Asia/Tokyo',
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false
+            });
+
+            messageElement.innerHTML = `
+                <img src="${message.avatar}" alt="avatar" class="avatar">
+                <div class="message-content">
+                    <span class="nickname">${message.nickname}:</span> 
+                    ${message.text}
+                    <span class="timestamp">${formattedTime}</span>
+                </div>
+            `;
             document.getElementById('messages').appendChild(messageElement);
             document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
         });
